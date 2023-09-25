@@ -9,10 +9,11 @@ const {
     DeleteItemCommand,
     ScanCommand,
     UpdateItemCommand,
+    DeleteBackupCommand,
   } = require('@aws-sdk/client-dynamodb');
   const { marshall, unmarshall } = require('@aws-sdk/util-dynamodb');
   
-  const client = new DynamoDBClient();
+  const db = new DynamoDBClient();
   
   const getPost = async (event) => {
     const response = { statusCode: 200 };
@@ -21,7 +22,7 @@ const {
         TableName: process.env.DYNAMODB_TABLE_NAME,
         Key: marshall({ postId: event.pathParameters.postId }),
       };
-      const { Item } = await client.send(new GetItemCommand(params));
+      const { Item } = await db.send(new GetItemCommand(params));
       response.body = JSON.stringify({
         message: 'Successfully retrieved post.',
         data: Item ? unmarshall(Item) : {},
@@ -47,7 +48,7 @@ const {
         TableName: process.env.DYNAMODB_TABLE_NAME,
         Item: marshall(body || {}),
       };
-      const createResult = await client.send(new PutItemCommand(params));
+      const createResult = await db.send(new PutItemCommand(params));
       response.body = JSON.stringify({
         message: 'Successfully created post.',
         createResult,
@@ -92,7 +93,7 @@ const {
           )
         ),
       };
-      const updateResult = await client.send(new UpdateItemCommand(params));
+      const updateResult = await db.send(new UpdateItemCommand(params));
       response.body = JSON.stringify({
         message: 'Successfully updated post.',
         updateResult,
@@ -116,7 +117,7 @@ const {
         TableName: process.env.DYNAMODB_TABLE_NAME,
         Key: marshall({ postId: event.pathParameters.postId }),
       };
-      const deleteResult = await client.send(new DeleteItemCommand(params));
+      const deleteResult = await db.send(new DeleteItemCommand(params));
       response.body = JSON.stringify({
         message: 'Successfully deleted post.',
         deleteResult,
@@ -136,7 +137,7 @@ const {
   const getAllPosts = async () => {
     const response = { statusCode: 200 };
     try {
-      const { Items } = await client.send(
+      const { Items } = await DeleteBackupCommand.send(
         new ScanCommand({ TableName: process.env.DYNAMODB_TABLE_NAME })
       );
       response.body = JSON.stringify({
